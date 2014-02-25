@@ -4,17 +4,32 @@ var drawCanvas = document.getElementById("drawcanvas");
 var drawctx = drawCanvas.getContext("2d");
 var startCanvas = document.getElementById("startcanvas");
 var startctx = startCanvas.getContext("2d");
+
+var spinCanvas = document.getElementById("spincanvas");
+var spinctx = spinCanvas.getContext("2d");
 gamectx.fillStyle = "rgba(3, 4, 5, .3);"
 gamectx.fillRect(0, 0, 600, 300);
 drawctx.fillStyle = "rgba(100, 100, 0, 1);"
 drawctx.fillRect(0, 0, 100, 100);
 startctx.fillStyle = "rgba(50, 50, 0, 1);"
 startctx.fillRect(0, 0, 100, 100);
+spinctx.fillStyle = "rgba(75, 75, 0, 1);"
+spinctx.fillRect(0, 0, 100, 100);
 
+drawctx.font="20px Times New Roman";
+drawctx.strokeText("draw",40, 40);
+
+startctx.font="20px Times New Roman";
+startctx.strokeText("square",40, 40);
+
+spinctx.font="20px Times New Roman";
+spinctx.strokeText("spin",40, 40);
 
 var states = ["beginning", "drawing", "playing"];
 var currState = "beginning";
 var makeShape = false;
+var spinShape = false;
+var spinCount = 0;
 //var player = points();
 
 var Player = function(){
@@ -31,20 +46,25 @@ var shape = new Array();
 var p = new Player();
 
 var gameLoop = function(){
-	//console.log(currState);
 	if(currState === "beginning"){
-
 	}
 	if(currState === "drawing"){
 		drawing();
-
 	}
 	if(currState === "playing"){
-		//console.log("playyyying");
 		checkBound();
 		if(makeShape === true){
-			console.log("should be sliding over shape");
+			//console.log("should be sliding over shape");
 			toShape();
+		}
+		if(spinShape == true && spinCount <50){
+			doSpin();
+			spinCount+=1;
+
+		if(spinCount ===100){
+			spinShape = false;
+		shape = new Array();
+	}
 		}
 		drawPlayer();
 
@@ -168,30 +188,25 @@ var drawPlayer = function(){
 		gamectx.fillRect(cornerX+p.points[i][0], cornerY+p.points[i][1], 3,3);
 	}
 	//gamectx.fillRect(player.center.x, p.center.y, player.size.x, player.size.y);
-	if(makeShape === true){
-		gamectx.fillStyle = "rgb(255, 0, 0)";
+	
 
-	for(var i = 0; i<shape.length; i++){
-		gamectx.fillRect(shape[i][0], shape[i][1], 3, 3);
-	}
-}
 };
 
 var checkBound = function(){
 	for(var i = 0; i<p.points.length; i++){
-		if(p.points[i][1]+ p.center.y >= 295){
+		if(p.points[i][1]+ p.center.y >= 299){
 			//console.log("hit bottom");
-			p.points[i][1] = 295-p.center.y;
+			p.points[i][1] = 299-p.center.y;
 		}
-		if(p.points[i][1]+ p.center.y <= 5){
+		if(p.points[i][1]+ p.center.y <= 1){
 			//console.log("hit bottom");
 			p.points[i][1] = 5-p.center.y;
 		}
-		if(p.points[i][0]+ p.center.x >= 595){// issue here
-			p.points[i][0] = 595-p.center.x;
+		if(p.points[i][0]+ p.center.x >= 599){// issue here
+			p.points[i][0] = 599-p.center.x;
 		}
-		if(p.points[i][0]+p.center.x<= 5){
-			p.points[i][0] = 5-p.center.x;
+		if(p.points[i][0]+p.center.x<= 1){
+			p.points[i][0] = 1-p.center.x;
 		}
 	}
 };
@@ -224,86 +239,74 @@ var planSquare = function(){
 	for(var i = 0; i<shape.length; i++){
 		gamectx.fillRect(shape[i][0], shape[i][1], 3, 3);
 	}
-	makeShape = true;
+	//makeShape = true;
 	//shape = new Array;
 
 };
 
-//var makeCircle = 
-// new goal --> SQUARE!!!
-//easier! and a good place to start with!
-// so we will divide the dots into 4 groups
-// need to figure out a way to set end points, and then just set their speeds and have them slowly get there
-
-// which are:
-// RIGHT SIDE-
-// X is p.center.x+radius, 
-// Y is variable p.center.y+ (range -radius/2 -> radius) in increments of radius/.25#pts
-
-// LEFT SIDE -
-// X is p.center.x - radius,
-// Y is variable p.center.y+(range -radius -> radius) in increments of radius/.25#pts
-
-
-// TOP 
-// X is variable p.center.x + (range -radius/2 -> radius) in increments of radius/.25#pts
-// Y is p.center.y - radius
-
-// BOTTOM 
-// X is variable p.center.x + (range -radius/2 -> radius) in increments of radius/.25#pts
-// Y is p.center.y + radius
-
-
-// so then we have a function that takes in a list of tuples of locations
-// and has them move there incrementally
 
 
 var toShape = function(){
+	//console.log("IN SHAPE lengths, first points then shape");
+	//console.log(p.points.length);
+	//console.log(shape.length);
+
 	var gotThere = true;
-	//console.log("calling to shape");
 	var xMove = 0;
 	var yMove = 0;
 	for(var i=0; i<p.points.length; i++){
 		xMove = shape[i][0]-(p.points[i][0]+p.center.x);
-		console.log("x move is:");
-		console.log(xMove);
-		if(Math.abs(xMove)>3){
+
+		if(Math.abs(xMove)>1){
 			p.points[i][0]+=(xMove/18);
 			gotThere = false;
 		}
 		yMove = shape[i][1]-(p.points[i][1]+p.center.y);
 		//console.log("y move is:");
 		//console.log(yMove);
-		if(Math.abs(yMove)>3){
+		if(Math.abs(yMove)>1){
+			p.points[i][1]+=(yMove/18);
+			gotThere = false;
+		}
+	}
+	if(gotThere === true){
+		makeShape = false;
+		shape = new Array();
+		console.log("end of making shape");
+
+	}
+}
+
+var doSpin = function(){
+	console.log("IN SPINlengths, first points then shape");
+	console.log(p.points.length);
+	console.log(shape.length);
+
+	var gotThere = true;
+	var xMove = 0;
+	var yMove = 0;
+	for(var i=0; i<p.points.length; i++){
+	//for(var i=0; i<shape.length; i++){
+		//if(i<)
+		//console.log(shape[i][0]);
+		//console.log(p.points[i][0]);
+		xMove = shape[i][0]-(p.points[i][0]+p.center.x);
+
+		if(Math.abs(xMove)>=1){
+			p.points[i][0]+=(xMove/18);
+			gotThere = false;
+		}
+		yMove = shape[i][1]-(p.points[i][1]+p.center.y);
+		//console.log("y move is:");
+		//console.log(yMove);
+		if(Math.abs(yMove)>=1){
 			p.points[i][0]+=(yMove/18);
 			gotThere = false;
 		}
 
-
-		// if(p.points[i][0] < shape[i][0]){
-		// 	console.log("p.points[i][0], before and after");
-		// 	console.log(p.points[i][0]);
-		// 	p.points[i][0]+=1;
-		// 	console.log(p.points[i][0]);
-		// 	gotThere = false;
-		// }
-		// else if(p.points[i][0]>shape[i][0]){
-		// 	p.points[i][0]-=1;
-		// 	gotThere = false;
-		// }
-		// if(p.points[i][1] < shape[i][1]){
-		// 	p.points[i][1]+=1;
-		// 	gotThere = false;
-
-		// }
-		// else if(p.points[i][1]>shape[i][1]){
-		// 	p.points[i][1]-=1;
-		// 	gotThere = false;
-		// }
 	}
-	//drawPlayer();
 	if(gotThere === true){
-		makeShape = false;
+		spinShape = false;
 		shape = new Array();
 	}
 
@@ -311,30 +314,12 @@ var toShape = function(){
 	/// TODO
 }
 
-
-
 startCanvas.addEventListener("mousedown", function(e){
 	planSquare();
+	makeShape = true;
 });
 
-//each of them will have an end location
-// their end location will be a circle
-// figure out total length of circle (2pi r)
-// divide that by # of points
-// need to figure out their place in the circle...
-//do I want a circle path and for each one their destination is... some length along that path?
-//each of them will move at a certain velocity to their end location
-
-
-
-
-//state machine -> ?
-
-
-//var statemachine = []
-//state traversal
-
-//set interval
-//window[curentState]()
-
-
+spinCanvas.addEventListener("mousedown", function(e){
+	planSquare();
+	spinShape = true;
+});
