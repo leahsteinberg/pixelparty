@@ -1,6 +1,7 @@
 //TO DO:
 
 //Make doodle bounce off of the blocks
+// make the blocks get deleted if they are off the screen
 //make some blocks red and some blocks blue 
 //set up point counter, logically and graphically
 //make red blocks deplete points and blue blocks increase points
@@ -13,7 +14,7 @@
 // make a new morph where they go off to the sides
 // need to save array of points on the side, 
 // set it up that you go to the outside then immediately to the original
-
+// make the block shape better? and make the spacing good
 
 
 
@@ -56,6 +57,13 @@ var Player = function(){
 
 var p = new Player();
 
+var LittlePoint = function(x, y, vx, vy){
+	this.x = x;
+	this.y = y;
+	this.vx = vx;
+	this.vy = vy;
+}
+
 var Block = function(){
 	//// {}
 	this.center = {x: 10, y: 15};
@@ -76,10 +84,9 @@ var makeBlock = function(){
 	newBlock.v.y = 0;
 	newBlock.status = "neutral";
 	arrayBlock.push(newBlock);
-
 };
 
-setInterval(makeBlock, 3000);
+setInterval(makeBlock, 300);
 
 var gameLoop = function(){
 	if(currState === "beginning"){
@@ -149,11 +156,18 @@ gameCanvas.addEventListener("mousemove", function (e){
 	    }
 	    if(e.which == 1){
 	    	if(Math.abs(525-mouseX)<50 && Math.abs(225-mouseY)<50){
-	    		p.points.push([mouseX, mouseY]);
+	    		/// absolute points here
+	    		p.points.push(new LittlePoint(mouseX, mouseY, p.v.x, p.v.y));
 	    		p.original.push([mouseX, mouseY]);
+	   // console.log("points position in mousemove when clicked");
+		//for (var i=0; i< p.points.length; i++){
+		//	console.log(p.points[i].x, p.points[i].y);
+			//console.log(p.points[i].y);
+		//}
 	    	}
 		}
 	}
+
 });
 
 gameCanvas.addEventListener("mouseup", function (e){
@@ -163,21 +177,33 @@ gameCanvas.addEventListener("mouseup", function (e){
 		var yMax = 0;
 		var xMax = 0;
 		for(var i = 0; i<p.points.length; i++){
-			xAccum += p.points[i][0];
-			yAccum += p.points[i][1];
-			if(p.points[i][0]>xMax){
-				xMax = p.points[i][0];
+			xAccum += p.points[i].x;
+			yAccum += p.points[i].y;
+			if(p.points[i].x>xMax){
+				xMax = p.points[i].x;
 			}
-			if(p.points[i][1]>yMax){
-				yMax = p.points[i][1];
+			if(p.points[i].y>yMax){
+				yMax = p.points[i].y;
 			}
 		}
+		// this should be absolute value
 		p.center.x = Math.floor(xAccum/p.points.length);
 		p.center.y = Math.floor(yAccum/p.points.length);
 		p.radius = Math.floor(((xMax-p.center.x)+(yMax-p.center.y))/2);
+		console.log("xMax:");
+		console.log(xMax);
+				console.log("yMax:");
+		console.log(yMax);
+				console.log("pcenter x:");
+		console.log(p.center.x);
+						console.log("pcenter y:");
+		console.log(p.center.y);
+		console.log("radius is:");
+		console.log(p.radius);
 		for(var i = 0; i<p.points.length; i++){
-			p.points[i][0]-= p.center.x;
-			p.points[i][1]-=p.center.y;
+			// making the absolute points relative
+			p.points[i].x-= p.center.x;
+			p.points[i].y-=p.center.y;
 			p.original[i][0]-= p.center.x;
 			p.original[i][1]-=p.center.y;
 		}
@@ -190,7 +216,6 @@ var planSquare = function(){
 	/// TO DO : MAKE THIS RELATIVE TO THE P.CENTER
 	//var numPts = p.points.length;
 	var chunk = 2*p.radius/(p.points.length/4);//
-
 	for(var i = 0; i<p.points.length/4; i++){
 		// Right Side
 		p.square.push([p.radius, Math.floor(-p.radius+(chunk)*i)]);
@@ -209,13 +234,12 @@ var planSquare = function(){
 	for(var i = 0; i<p.points.length/4; i++){
 		// BOTTOM
 		/// TO DO .. theres prob overlap here in each quarter... thats why theres some doubled 
-
 		p.square.push([Math.floor(-p.radius+(chunk)*i), p.radius]);
 	}
-	//for(var i = 0; i<square.length; i++){
-		// TO DO make red.. to test the square
-	//	gamectx.fillRect(square[i][0], square[i][1], 3, 3);
-	//}
+	console.log(p.square);
+	for(var i = 0; i<p.square.length; i++){
+		console.log(p.square[i][0], p.square[i][1]);
+	}
 };
 
 
@@ -230,15 +254,34 @@ var displayPlayer = function(){
 	p.v.y*=.98;
 	p.center.x+=p.v.x;
 	p.center.y+=p.v.y;
+	//console.log(p.points.length);
 	for(var i = 0; i<p.points.length; i++){
-		gamectx.fillRect(p.center.x+p.points[i][0], p.center.y+p.points[i][1], 4,4);
+	
+		var velXDiff = (p.v.x-p.points[i].vx);
+		if(Math.abs(velXDiff)>.1){
+		p.points[i].vx += velXDiff/10;
+		}
+		else{
+			p.points[i].vy = p.v.y;////!!!
+		}
+
+		var velYDiff = (p.v.y-p.points[i].vy);
+		if(Math.abs(velYDiff)>.1){
+		p.points[i].vy += velYDiff/10;
+		}
+		else{
+			p.points[i].vy = p.v.y;////!!!
+		}
+		p.points[i].x += p.points[i].vx; //<-- changed this 
+		p.points[i].y +=p.points[i].vy;  ///<-- changed this 
+
+		gamectx.fillRect(p.center.x+p.points[i].x, p.center.y+p.points[i].y, 4,4);
 	}
-	gamectx.fillStyle = "rgba(0, 0, 0, .9)";
-	console.log(arrayBlock.length);
-	//for(var i = 0; i<arrayBlock.length; i++){
-	//	arrayBlock[i].center.x+=arrayBlock[i].v.x;
-	//	gamectx.fillRect(arrayBlock[i].center.x, arrayBlock[i].center.y, 5, 5);
-	//}
+	gamectx.fillStyle = "rgba(255, 0, 0, .9)";
+	for(var i = 0; i<arrayBlock.length; i++){
+		arrayBlock[i].center.x+=arrayBlock[i].v.x;
+		gamectx.fillRect(arrayBlock[i].center.x, arrayBlock[i].center.y, 5, 5);
+	}
 };
 
 window.addEventListener("keydown", function (e){
@@ -260,21 +303,39 @@ window.addEventListener("keydown", function (e){
 
 var checkBound = function(){
 	for(var i = 0; i<p.points.length; i++){
-		if(p.points[i][1]+ p.center.y >= 300){
-			p.points[i][1] = 300-p.center.y;
+		if(p.points[i].y+ p.center.y >= 300){
+			p.points[i].y = 300-p.center.y;
 			p.v.y-=.1;
 		}
-		if(p.points[i][1]+ p.center.y <= 0){
-			p.points[i][1] = 0-p.center.y;
+		if(p.points[i].y+ p.center.y <= 0){
+			p.points[i].y = 0-p.center.y;
 			p.v.y+=.1;
 		}
-		if(p.points[i][0]+ p.center.x >= 600){// issue here
-			p.points[i][0] = 600-p.center.x;
+		if(p.points[i].x+ p.center.x >= 600){// issue here
+			p.points[i].x = 600-p.center.x;
 			p.v.x-=.1;
 		}
-		if(p.points[i][0]+p.center.x<= 0){
-			p.points[i][0] = 0-p.center.x;
+		if(p.points[i].x+p.center.x<= 0){
+			p.points[i].x = 0-p.center.x;
 			p.v.x+=.1;
+		}
+		//console.log(arrayBlock.length);
+		for (var j = 0; j< arrayBlock.length; j++){
+			//console.log("jdslkjfsd");
+			//console.log(arrayBlock[j].center.x);
+			if((Math.abs(arrayBlock[j].center.x-(p.points[i].x+p.center.x))<5) && (Math.abs(arrayBlock[j].center.y-(p.points[i].y+p.center.y))<5)){
+			/// ADD RANDOMNESS HEREEEEE
+			//if(p.points[i][0]=== arrayBlock[j].center.x && p.points[i][1] === arrayBlock[j].center.y){
+				///GOOOD//p.points[i].x+= (-p.points[i].vx)*.7 - Math.random()*5;
+				
+				///GOOOD//p.points[i].y+= (-p.points[i].vy)*.7- (Math.random()-.5)*15;
+
+				p.points[i].vx+= (-p.points[i].vx)*7 - Math.random()*15;
+				
+				p.points[i].vy+= (-p.points[i].vy)*7- (Math.random()-.5)*15;
+
+			}
+
 		}
 	}
 };
@@ -284,23 +345,29 @@ var toShape = function(){
 	/// Any incoming arrays should be relative to center..
 	// here, add back the p.center
 	var gotThere = true;
+
 	if(playState === "square"){
-		arrayPts = p.square;
+		var arrayPts = p.square;
+		console.log("in to shape, square is:")
+		//console.log(arrayPts);
 	}
 	else{
-		arrayPts = p.original;
+		var arrayPts = p.original;
 	}
 	for(var i=0; i<p.points.length; i++){
-		xMove = arrayPts[i][0]-(p.points[i][0]);
+		console.log(arrayPts[i][0], arrayPts[i][1]);
+		
+		var xMove = arrayPts[i][0]-p.points[i].x;
 		if(Math.abs(xMove)>1){
-			p.points[i][0]+=(xMove/18);
+			p.points[i].x+=(xMove/18);
+			//p.points[i].vx+=(xMove/18);
 			gotThere = false;
 		}
-		yMove = arrayPts[i][1]-(p.points[i][1]);
-			
-
+		var yMove = arrayPts[i][1]-p.points[i].y;
+		
 		if(Math.abs(yMove)>1){
-			p.points[i][1]+=(yMove/18);
+			p.points[i].y+=(yMove/18);
+			//p.points[i].vy+=(yMove/18);
 			gotThere = false;
 		}
 	}
