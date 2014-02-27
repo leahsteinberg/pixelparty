@@ -1,8 +1,3 @@
-//green - 10, 242, 157
-//blue - 10, 203, 242
-//pink - 223, 10, 242
-
-
 //TO DO:
 
 //Make doodle bounce off of the blocks
@@ -30,21 +25,21 @@ var drawctx = drawCanvas.getContext("2d");
 var shapeCanvas = document.getElementById("shapecanvas");
 var shapectx = shapeCanvas.getContext("2d");
 
-gamectx.fillStyle = "rgba(255, 255, 255, 1);"
+gamectx.fillStyle = "rgba(3, 4, 5, .3);"
 gamectx.fillRect(0, 0, 600, 300);
-//drawctx.fillStyle = "rgba(100, 100, 0, 1);"
-//drawctx.fillRect(0, 0, 100, 100);
-//shapectx.fillStyle = "rgba(50, 50, 0, 1);"
-//shapectx.fillRect(0, 0, 100, 100);
+drawctx.fillStyle = "rgba(100, 100, 0, 1);"
+drawctx.fillRect(0, 0, 100, 100);
+shapectx.fillStyle = "rgba(50, 50, 0, 1);"
+shapectx.fillRect(0, 0, 100, 100);
 
-//drawctx.font="20px Times New Roman";
-//drawctx.strokeText("draw",40, 40);
-//shapectx.font="20px Times New Roman";
-//shapectx.strokeText("transform",40, 40);
+drawctx.font="20px Times New Roman";
+drawctx.strokeText("draw",40, 40);
+shapectx.font="20px Times New Roman";
+shapectx.strokeText("transform",40, 40);
 
-var states = ["drawing", "playing"];
-var currState = "drawing";
-var subStates = ["square", "orig", "dentOrig", "dentSquare"];
+var states = ["beginning", "drawing", "playing"];
+var currState = "beginning";
+var subStates = ["square", "orig"];
 var playState = "orig";
 var transforming = false;
 
@@ -58,8 +53,6 @@ var Player = function(){
 	this.radius = 10;
 	this.original = Array();
 	this.square = Array();
-	this.dentOrig = Array();
-	this.dentSquare = Array();
 };
 
 var p = new Player();
@@ -72,10 +65,13 @@ var LittlePoint = function(x, y, vx, vy){
 }
 
 var Block = function(){
+	//// {}
 	this.center = {x: 10, y: 15};
 	this.status = "neutral";
 	this.color = {r:0, g:0, b:0};
 	this.v = {x:0, y:0};
+	//this.distNext = {x:0, y:0};
+	////return { }
 };
 
 var arrayBlock = Array();
@@ -90,7 +86,7 @@ var makeBlock = function(){
 	arrayBlock.push(newBlock);
 };
 
-setInterval(makeBlock, 1000);
+setInterval(makeBlock, 300);
 
 var gameLoop = function(){
 	if(currState === "beginning"){
@@ -128,10 +124,7 @@ shapeCanvas.addEventListener("mousedown", function (e){
 			playState = "square";
 		}
 		else if(playState === "square"){
-			playState = "dentOrig";
-		}
-		else if(playState === "dentOrig"){
-			playState = "orig"
+			playState = "orig";
 		}
 		transforming = true;
 	}
@@ -144,15 +137,9 @@ var drawing = function(){
 	gamectx.clearRect(0, 0, 600, 300);
 	gamectx.font="30px Times New Roman";
 	gamectx.strokeText("draw your player in the box.",16, 50);
-	gamectx.fillStyle = "rgba(255, 255, 255, .1);"
+	gamectx.fillStyle = "rgba(3, 4, 5, .3);"
 	gamectx.fillRect(0, 0, 600, 300);
-	gamectx.strokeStyle = "rgb(223, 10, 242);"
-	//green - 10, 242, 157
-//blue - 10, 203, 242
-//pink - 223, 10, 242
-	gamectx.fillStyle = "rgba(223, 10, 242, 1);"
-
-
+	gamectx.strokeStyle = "rgb(30, 50, 60);"
 	gamectx.fillRect(475, 175, 100, 100);
 };
 
@@ -172,8 +159,11 @@ gameCanvas.addEventListener("mousemove", function (e){
 	    		/// absolute points here
 	    		p.points.push(new LittlePoint(mouseX, mouseY, p.v.x, p.v.y));
 	    		p.original.push([mouseX, mouseY]);
-	    		p.dentOrig.push([mouseX, mouseY]);
-
+	   // console.log("points position in mousemove when clicked");
+		//for (var i=0; i< p.points.length; i++){
+		//	console.log(p.points[i].x, p.points[i].y);
+			//console.log(p.points[i].y);
+		//}
 	    	}
 		}
 	}
@@ -200,15 +190,22 @@ gameCanvas.addEventListener("mouseup", function (e){
 		p.center.x = Math.floor(xAccum/p.points.length);
 		p.center.y = Math.floor(yAccum/p.points.length);
 		p.radius = Math.floor(((xMax-p.center.x)+(yMax-p.center.y))/2);
-
+		console.log("xMax:");
+		console.log(xMax);
+				console.log("yMax:");
+		console.log(yMax);
+				console.log("pcenter x:");
+		console.log(p.center.x);
+						console.log("pcenter y:");
+		console.log(p.center.y);
+		console.log("radius is:");
+		console.log(p.radius);
 		for(var i = 0; i<p.points.length; i++){
 			// making the absolute points relative
 			p.points[i].x-= p.center.x;
 			p.points[i].y-=p.center.y;
 			p.original[i][0]-= p.center.x;
 			p.original[i][1]-=p.center.y;
-			p.dentOrig[i][0]-=p.center.x;
-			p.dentOrig[i][1]-=p.center.y;
 		}
 		currState = "playing";
 		planSquare();
@@ -222,32 +219,27 @@ var planSquare = function(){
 	for(var i = 0; i<p.points.length/4; i++){
 		// Right Side
 		p.square.push([p.radius, Math.floor(-p.radius+(chunk)*i)]);
-		p.dentSquare.push([p.radius, Math.floor(-p.radius+(chunk)*i)]);
-
 	}
 	for(var i = 0; i<p.points.length/4; i++){
 		// left Side
 		p.square.push([-p.radius, Math.floor(-p.radius+(chunk)*i)]);
-				p.dentSquare.push([-p.radius, Math.floor(-p.radius+(chunk)*i)]);
-
 	}
 
 	for(var i = 0; i<p.points.length/4; i++){
 		// TOP
 		/// TO DO .. theres prob overlap here in each quarter... thats why theres some doubled 
 		p.square.push([Math.floor(-p.radius+(chunk)*i), -p.radius]);
-				p.dentSquare.push([Math.floor(-p.radius+(chunk)*i), -p.radius]);
-
 	}
 
 	for(var i = 0; i<p.points.length/4; i++){
 		// BOTTOM
 		/// TO DO .. theres prob overlap here in each quarter... thats why theres some doubled 
 		p.square.push([Math.floor(-p.radius+(chunk)*i), p.radius]);
-		p.dentSquare.push([Math.floor(-p.radius+(chunk)*i), p.radius]);
-
 	}
-	
+	console.log(p.square);
+	for(var i = 0; i<p.square.length; i++){
+		console.log(p.square[i][0], p.square[i][1]);
+	}
 };
 
 
@@ -255,39 +247,27 @@ var planSquare = function(){
 
 var displayPlayer = function(){
 	gamectx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-	gamectx.fillStyle="rgba(255, 255, 255, 0);"
-	gamectx.strokeStyle = "rgba(223, 10, 242, .5)";
-	gamectx.strokeRect(0, 0, 600, 300);
+	gamectx.fillStyle="rgba(3, 4, 5, 0.3);"
 	gamectx.fillRect(0, 0, 600, 300);
-	drawctx.strokeStyle = "rgba(223, 10, 242, 1);"
-	drawctx.strokeRect(0, 0, 100, 100);
-	gamectx.fillStyle = "rgba(5, 245, 157, 1)";
-
-	//green - 10, 242, 157
-//blue - 10, 203, 242
-//pink - 223, 10, 242
-
+	gamectx.fillStyle = "rgba(p.color.r, p.color.g, p.color.b, .9)";
 	p.v.x*=.98;
 	p.v.y*=.98;
 	p.center.x+=p.v.x;
 	p.center.y+=p.v.y;
+	//console.log(p.points.length);
 	for(var i = 0; i<p.points.length; i++){
 	
 		var velXDiff = (p.v.x-p.points[i].vx);
-		if(Math.abs(velXDiff)> .1){
-
-		//if(Math.abs(velXDiff)>    (Math.random())){
+		if(Math.abs(velXDiff)>.1){
 		p.points[i].vx += velXDiff/10;
-
+		
 		}
 		else{
 			p.points[i].vy = p.v.y;////!!!
 		}
 
 		var velYDiff = (p.v.y-p.points[i].vy);
-				if(Math.abs(velYDiff)> .1){
-
-		//if(Math.abs(velYDiff)>   (Math.random())){
+		if(Math.abs(velYDiff)>.1){
 		p.points[i].vy += velYDiff/10;
 		}
 		else{
@@ -298,9 +278,7 @@ var displayPlayer = function(){
 
 		gamectx.fillRect(p.center.x+p.points[i].x, p.center.y+p.points[i].y, 4,4);
 	}
-	//pink - 223, 10, 242
-
-	gamectx.fillStyle = "rgba(223, 10, 242, 1)";
+	gamectx.fillStyle = "rgba(255, 0, 0, .9)";
 	for(var i = 0; i<arrayBlock.length; i++){
 		arrayBlock[i].center.x+=arrayBlock[i].v.x;
 		gamectx.fillRect(arrayBlock[i].center.x, arrayBlock[i].center.y, 5, 5);
@@ -321,29 +299,6 @@ window.addEventListener("keydown", function (e){
 		if(e.keyCode === 40){// downarrow
 			p.v.y+=1.4;
 		}
-		if(e.keyCode === 32){
-			if(playState === "orig"){
-			playState = "square";
-							console.log("square");
-
-			}
-			else if(playState === "square"){
-				playState = "dentOrig";
-								console.log("dentorig");
-
-			}
-			else if(playState === "dentOrig"){
-				playState = "dentSquare";
-								console.log("dentsquare");
-
-			}
-			else if(playState === "dentSquare"){
-				playState = "orig";
-				console.log("in orig");
-			}
-			transforming = true;
-		}
-
 	}
 });
 
@@ -351,55 +306,33 @@ var checkBound = function(){
 	for(var i = 0; i<p.points.length; i++){
 		if(p.points[i].y+ p.center.y >= 300){
 			p.points[i].y = 300-p.center.y;
-			if(playState === "dentOrig"){
-				p.dentOrig[i].y = 300-p.center.y;
-
-			}
-			if(playState === "dentSquare"){
-				p.dentSquare[i].y = 300-p.center.y;
-
-			}
 			p.v.y-=.1;
-
 		}
 		if(p.points[i].y+ p.center.y <= 0){
 			p.points[i].y = 0-p.center.y;
-			if(playState === "dentOrig"){
-				p.dentOrig[i].y = 0-p.center.y;
-				console.log("should be denting");
-			}
-			//if(playState === "dentSquare"){
-				//p.dentSquare[i].y = 0-p.center.y;
-			//}
 			p.v.y+=.1;
 		}
 		if(p.points[i].x+ p.center.x >= 600){// issue here
 			p.points[i].x = 600-p.center.x;
-			if(playState === "dentOrig"){
-				p.dentOrig[i].x = 600-p.center.x;
-			}
-			if(playState === "dentSquare"){
-				p.dentSquare[i].x = 600-p.center.x;
-
-			}
 			p.v.x-=.1;
 		}
 		if(p.points[i].x+p.center.x<= 0){
 			p.points[i].x = 0-p.center.x;
-			if(playState === "dentOrig"){
-				p.dentOrig[i].y = 0-p.center.y;
-
-			}
-			if(playState === "dentSquare"){
-				p.dentSquare[i].y = 0-p.center.y;
-
-			}
 			p.v.x+=.1;
 		}
+		//console.log(arrayBlock.length);
 		for (var j = 0; j< arrayBlock.length; j++){
-
+			//console.log("jdslkjfsd");
+			//console.log(arrayBlock[j].center.x);
 			if((Math.abs(arrayBlock[j].center.x-(p.points[i].x+p.center.x))<5) && (Math.abs(arrayBlock[j].center.y-(p.points[i].y+p.center.y))<5)){
+			/// ADD RANDOMNESS HEREEEEE
+			//if(p.points[i][0]=== arrayBlock[j].center.x && p.points[i][1] === arrayBlock[j].center.y){
+				///GOOOD//p.points[i].x+= (-p.points[i].vx)*.7 - Math.random()*5;
+				
+				///GOOOD//p.points[i].y+= (-p.points[i].vy)*.7- (Math.random()-.5)*15;
+
 				p.points[i].vx+= (-p.points[i].vx)*7 - Math.random()*15;
+				
 				p.points[i].vy+= (-p.points[i].vy)*7- (Math.random()-.5)*15;
 
 			}
@@ -416,30 +349,32 @@ var toShape = function(){
 
 	if(playState === "square"){
 		var arrayPts = p.square;
-		
-	}
-	else if(playState === "orig"){
-		var arrayPts = p.original;
-	}
-	else if(playState === "dentOrig"){
-		var arrayPts = p.dentOrig;
+		console.log("in to shape, square is:")
+		//console.log(arrayPts);
 	}
 	else{
-		var arrayPts = p.dentSquare;
+		var arrayPts = p.original;
 	}
 	for(var i=0; i<p.points.length; i++){
+		console.log(arrayPts[i][0], arrayPts[i][1]);
 		
 		var xMove = arrayPts[i][0]-p.points[i].x;
 		if(Math.abs(xMove)>1){
 			p.points[i].x+=(xMove/18);
+			//p.points[i].vx+=(xMove/18);
 			gotThere = false;
 		}
 		var yMove = arrayPts[i][1]-p.points[i].y;
 		
 		if(Math.abs(yMove)>1){
 			p.points[i].y+=(yMove/18);
+			//p.points[i].vy+=(yMove/18);
 			gotThere = false;
 		}
 	}
 	return gotThere;
 }
+
+
+
+
