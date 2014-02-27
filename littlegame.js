@@ -39,6 +39,7 @@ var Player = function(){
 	this.color = {r: 0, g: 0, b:0};
 	this.v = {x:0, y:0};
 	this.radius = 10;
+	this.original = Array();
 };
 
 var shape = new Array();
@@ -54,22 +55,15 @@ var gameLoop = function(){
 	if(currState === "playing"){
 		checkBound();
 		if(makeShape === true){
-			//console.log("should be sliding over shape");
-			toShape();
+			toShape(shape);
 		}
-		if(spinShape == true && spinCount <50){
-			doSpin();
-			spinCount+=1;
-
-		if(spinCount ===100){
-			spinShape = false;
-		shape = new Array();
-	}
+		if(spinShape == true){
+			console.log("trying to do orig shape");
+			toShape(p.original);
 		}
+	
 		drawPlayer();
-
 	}
-
 };
 
 setInterval(gameLoop, 16);
@@ -108,6 +102,7 @@ gameCanvas.addEventListener("mousemove", function (e){
     if(e.which == 1){
     	if(Math.abs(525-mouseX)<50 && Math.abs(225-mouseY)<50){
     		p.points.push([mouseX, mouseY]);
+    	p.original.push([mouseX, mouseY]);
     	}
 	}
 }
@@ -144,9 +139,17 @@ gameCanvas.addEventListener("mouseup", function (e){
 	for(var i = 0; i<p.points.length; i++){
 		p.points[i][0]-= p.center.x;
 		p.points[i][1]-=p.center.y;
+		p.original[i][0]-= p.center.x;
+		p.points[i][1]-=p.center.y;
 	}
 	currState = "playing";
+	//p.original = p.points;
+	for(var i=0; i<p.original.length; i++){
+	console.log(p.points[i]);
+
+	console.log(p.original[i]);
 	//drawPlayer();
+	}
 	}
 });
 
@@ -156,20 +159,20 @@ gameCanvas.addEventListener("mouseup", function (e){
 window.addEventListener("keydown", function (e){
 	if(currState === "playing"){
 	if(e.keyCode === 37){
-		p.center.x -=3;
+		//p.center.x -=3;
 		p.v.x-=1;
 	}
 	if(e.keyCode === 39){
-		p.center.x +=3;
+		//p.center.x +=3;
 		p.v.x+=1;
 	}
 	if(e.keyCode === 38){// up arrow
-		p.center.y -=3;
+		//p.center.y -=3;
 		p.v.y-=1;
 	}
 
 	if(e.keyCode === 40){// downarrow
-		p.center.y +=3;
+		//p.center.y +=3;
 		p.v.y+=1;
 	}
 
@@ -184,6 +187,10 @@ var drawPlayer = function(){
 	gamectx.fillStyle = "rgb(p.color.r, p.color.g, p.color.b)";
 	var cornerX = p.center.x;
 	var cornerY = p.center.y;
+	p.v.x*=.98;
+	p.v.y*=.98;
+	p.center.x +=p.v.x;
+	p.center.y += p.v.y;
 	for(var i = 0; i<p.points.length; i++){
 		gamectx.fillRect(cornerX+p.points[i][0], cornerY+p.points[i][1], 3,3);
 	}
@@ -194,26 +201,31 @@ var drawPlayer = function(){
 
 var checkBound = function(){
 	for(var i = 0; i<p.points.length; i++){
-		if(p.points[i][1]+ p.center.y >= 299){
+		if(p.points[i][1]+ p.center.y >= 300){
 			//console.log("hit bottom");
 			p.points[i][1] = 299-p.center.y;
+			p.v.y-=.3;
+
 		}
-		if(p.points[i][1]+ p.center.y <= 1){
+		if(p.points[i][1]+ p.center.y <= 0){
 			//console.log("hit bottom");
-			p.points[i][1] = 5-p.center.y;
+			p.points[i][1] = 1-p.center.y;
+			p.v.y+=.3;
 		}
-		if(p.points[i][0]+ p.center.x >= 599){// issue here
+		if(p.points[i][0]+ p.center.x >= 600){// issue here
 			p.points[i][0] = 599-p.center.x;
+			p.v.x-=.3;
 		}
-		if(p.points[i][0]+p.center.x<= 1){
+		if(p.points[i][0]+p.center.x<= 0){
 			p.points[i][0] = 1-p.center.x;
+			p.v.x+=.3;
 		}
 	}
 };
 
 
 var planSquare = function(){
-
+/// TO DO .. theres prob overlap here in each quarter... thats why theres some doubled 
 	console.log("in plan square");
 	var numPts = p.points.length;
 	//numPts+=(numPts%4);
@@ -246,22 +258,23 @@ var planSquare = function(){
 
 
 
-var toShape = function(){
+var toShape = function(arrayPts){
 	//console.log("IN SHAPE lengths, first points then shape");
 	//console.log(p.points.length);
 	//console.log(shape.length);
-
+console.log("what is array pts");
+console.log(arrayPts);
 	var gotThere = true;
 	var xMove = 0;
 	var yMove = 0;
 	for(var i=0; i<p.points.length; i++){
-		xMove = shape[i][0]-(p.points[i][0]+p.center.x);
+		xMove = arrayPts[i][0]-(p.points[i][0]+p.center.x);
 
 		if(Math.abs(xMove)>1){
 			p.points[i][0]+=(xMove/18);
 			gotThere = false;
 		}
-		yMove = shape[i][1]-(p.points[i][1]+p.center.y);
+		yMove = arrayPts[i][1]-(p.points[i][1]+p.center.y);
 		//console.log("y move is:");
 		//console.log(yMove);
 		if(Math.abs(yMove)>1){
@@ -320,6 +333,14 @@ startCanvas.addEventListener("mousedown", function(e){
 });
 
 spinCanvas.addEventListener("mousedown", function(e){
-	planSquare();
+	makeShape = true;
 	spinShape = true;
+	//planSquare();
+	//spinShape = true;
 });
+
+
+
+var block.prototype = function(){
+
+};
