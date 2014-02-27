@@ -48,6 +48,7 @@ var subStates = ["square", "orig", "dentOrig", "dentSquare"];
 var playState = "orig";
 var transforming = false;
 
+var totalPts = 0;
 
 var Player = function(){
 	this.center = {x: 10, y: 15};
@@ -88,6 +89,8 @@ var makeBlock = function(){
 	newBlock.v.y = 0;
 	newBlock.status = "neutral";
 	arrayBlock.push(newBlock);
+	console.log("# of blocks: ");
+	console.log(arrayBlock.length);
 };
 
 setInterval(makeBlock, 1000);
@@ -143,10 +146,10 @@ shapeCanvas.addEventListener("mousedown", function (e){
 var drawing = function(){
 	gamectx.clearRect(0, 0, 600, 300);
 	gamectx.font="30px Times New Roman";
-	gamectx.strokeText("draw your player in the box.",16, 50);
-	gamectx.fillStyle = "rgba(255, 255, 255, .1);"
+	gamectx.fillText("draw your player in the box.",16, 50);
+	gamectx.fillStyle = "rgba(255, 255, 255, 0);"
 	gamectx.fillRect(0, 0, 600, 300);
-	gamectx.strokeStyle = "rgb(223, 10, 242);"
+	gamectx.fillStyle = "rgb(0, 0, 0);"
 	//green - 10, 242, 157
 //blue - 10, 203, 242
 //pink - 223, 10, 242
@@ -255,13 +258,23 @@ var planSquare = function(){
 
 var displayPlayer = function(){
 	gamectx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+		drawctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+
 	gamectx.fillStyle="rgba(255, 255, 255, 0);"
 	gamectx.strokeStyle = "rgba(223, 10, 242, .5)";
 	gamectx.strokeRect(0, 0, 600, 300);
 	gamectx.fillRect(0, 0, 600, 300);
+	
+
+	//drawctx.strokeText
+	drawctx.font="20px Times New Roman";
+	drawctx.fillStyle = "rgba(223, 10, 242, 1)";
+	drawctx.fillText(totalPts,20, 30);
+
 	drawctx.strokeStyle = "rgba(223, 10, 242, 1);"
 	drawctx.strokeRect(0, 0, 100, 100);
-	gamectx.fillStyle = "rgba(5, 245, 157, 1)";
+
+	gamectx.fillStyle = "rgba(0, 0, 0, 1)";
 
 	//green - 10, 242, 157
 //blue - 10, 203, 242
@@ -299,11 +312,16 @@ var displayPlayer = function(){
 		gamectx.fillRect(p.center.x+p.points[i].x, p.center.y+p.points[i].y, 4,4);
 	}
 	//pink - 223, 10, 242
+	//green - 10, 242, 157
 
-	gamectx.fillStyle = "rgba(223, 10, 242, 1)";
+	gamectx.fillStyle = "rgba(10, 255, 157, 1)";
 	for(var i = 0; i<arrayBlock.length; i++){
 		arrayBlock[i].center.x+=arrayBlock[i].v.x;
 		gamectx.fillRect(arrayBlock[i].center.x, arrayBlock[i].center.y, 5, 5);
+		if(arrayBlock[i].x < -5){
+			arrayBlock.pop();
+			console.log("should be deleting a block");
+		}
 	}
 };
 
@@ -323,18 +341,18 @@ window.addEventListener("keydown", function (e){
 		}
 		if(e.keyCode === 32){
 			if(playState === "orig"){
-			playState = "square";
-							console.log("square");
+				playState = "square";
+			console.log("square");
 
 			}
 			else if(playState === "square"){
 				playState = "dentOrig";
-								console.log("dentorig");
+				console.log("dentorig");
 
 			}
 			else if(playState === "dentOrig"){
 				playState = "dentSquare";
-								console.log("dentsquare");
+				console.log("dentsquare");
 
 			}
 			else if(playState === "dentSquare"){
@@ -350,22 +368,22 @@ window.addEventListener("keydown", function (e){
 var checkBound = function(){
 	for(var i = 0; i<p.points.length; i++){
 		if(p.points[i].y+ p.center.y >= 300){
-			p.points[i].y = 300-p.center.y;
+			p.points[i].y = 299-p.center.y;
 			if(playState === "dentOrig"){
-				p.dentOrig[i].y = 300-p.center.y;
+				p.dentOrig[i].y = 299-p.center.y;
 
 			}
 			if(playState === "dentSquare"){
-				p.dentSquare[i].y = 300-p.center.y;
+				p.dentSquare[i].y = 299-p.center.y;
 
 			}
 			p.v.y-=.1;
 
 		}
 		if(p.points[i].y+ p.center.y <= 0){
-			p.points[i].y = 0-p.center.y;
+			p.points[i].y = 1-p.center.y;
 			if(playState === "dentOrig"){
-				p.dentOrig[i].y = 0-p.center.y;
+				p.dentOrig[i].y = 1-p.center.y;
 				console.log("should be denting");
 			}
 			//if(playState === "dentSquare"){
@@ -374,24 +392,24 @@ var checkBound = function(){
 			p.v.y+=.1;
 		}
 		if(p.points[i].x+ p.center.x >= 600){// issue here
-			p.points[i].x = 600-p.center.x;
+			p.points[i].x = 599-p.center.x;
 			if(playState === "dentOrig"){
-				p.dentOrig[i].x = 600-p.center.x;
+				p.dentOrig[i].x = 599-p.center.x;
 			}
 			if(playState === "dentSquare"){
-				p.dentSquare[i].x = 600-p.center.x;
+				p.dentSquare[i].x = 599-p.center.x;
 
 			}
 			p.v.x-=.1;
 		}
 		if(p.points[i].x+p.center.x<= 0){
-			p.points[i].x = 0-p.center.x;
+			p.points[i].x = 1-p.center.x;
 			if(playState === "dentOrig"){
-				p.dentOrig[i].y = 0-p.center.y;
+				p.dentOrig[i].y = 1-p.center.y;
 
 			}
 			if(playState === "dentSquare"){
-				p.dentSquare[i].y = 0-p.center.y;
+				p.dentSquare[i].y = 1-p.center.y;
 
 			}
 			p.v.x+=.1;
@@ -399,8 +417,9 @@ var checkBound = function(){
 		for (var j = 0; j< arrayBlock.length; j++){
 
 			if((Math.abs(arrayBlock[j].center.x-(p.points[i].x+p.center.x))<5) && (Math.abs(arrayBlock[j].center.y-(p.points[i].y+p.center.y))<5)){
-				p.points[i].vx+= (-p.points[i].vx)*7 - Math.random()*15;
-				p.points[i].vy+= (-p.points[i].vy)*7- (Math.random()-.5)*15;
+				totalPts-=1;
+				p.points[i].vx+= (-p.points[i].vx)*7 - Math.random()*10;
+				p.points[i].vy+= (-p.points[i].vy)*7- (Math.random()-.5)*10;
 
 			}
 
