@@ -25,13 +25,18 @@
 
 var gameCanvas = document.getElementById("gamecanvas");
 var gamectx = gameCanvas.getContext("2d");
+
 var drawCanvas = document.getElementById("drawcanvas");
 var drawctx = drawCanvas.getContext("2d");
+
 var shapeCanvas = document.getElementById("shapecanvas");
 var shapectx = shapeCanvas.getContext("2d");
 
 gamectx.fillStyle = "rgba(255, 255, 255, 1);"
 gamectx.fillRect(0, 0, 600, 300);
+
+
+
 //drawctx.fillStyle = "rgba(100, 100, 0, 1);"
 //drawctx.fillRect(0, 0, 100, 100);
 //shapectx.fillStyle = "rgba(50, 50, 0, 1);"
@@ -323,7 +328,7 @@ var displayPlayer = function(){
 	//pink - 223, 10, 242
 	//green - 10, 242, 157
 
-	gamectx.fillStyle = "rgba(10, 255, 157, 1)";
+	gamectx.fillStyle = "rgba(244, 10, 240, 1)";
 	for(var i = 0; i<arrayBlock.length; i++){
 		arrayBlock[i].center.x+=arrayBlock[i].v.x;
 		gamectx.fillRect(arrayBlock[i].center.x, arrayBlock[i].center.y, 5, 5);
