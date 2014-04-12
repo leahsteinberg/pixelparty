@@ -10,5 +10,9 @@ I wrote this as I was learning Javascript. All of the animation is done from scr
 ###How it works:
 Multiple physics elements are going on here. When you draw the doodle, the center is recorded and used to move the doodle around. Pressing the arrows speeds up the doodle, but friction will slow it down. When the pixels get hit out of place, they fly away from whatever hit them. When the doodle re-coheres, either because the space bar was pressed or the pixels were too far away from eachother, they slowly move back into place, and the rate of their movement also changes, so at first they're moving quickly and then they slowly glide back.
 
-I use game loop to accept user input and redraw the canvas. 
+I use game loop to accept user input and redraw the canvas.
+
+
+####How to play it
+Make your way over to this [link](http://leahsteinberg.github.io/project-pixel-party.html).
 
